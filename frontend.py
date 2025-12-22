@@ -28,9 +28,17 @@ if user_input:
     with st.chat_message('user'):
         st.text(user_input)
      
-    response=chatbot.invoke({'messages':[HumanMessage(content=user_input)]},config=CONFIG)
-    assistant_text = response['messages'][-1].content[0]["text"]
+
+    # response=chatbot.invoke({'messages':[HumanMessage(content=user_input)]},config=CONFIG)
+
+    # assistant_text = response['messages'][-1].content[0]["text"]
     
-    st.session_state['message_history'].append({'role': 'assistant', 'content': assistant_text})   
+    # st.session_state['message_history'].append({'role': 'assistant', 'content': assistant_text})   
     with st.chat_message('assistant'):
-        st.text(assistant_text)    
+        assistant_text=st.write_stream(
+            message_chunk.content for message_chunk,metadata in chatbot.stream(
+                {'messages':[HumanMessage(content=user_input)]},config=CONFIG,stream_mode='messages'
+            )
+        )
+        # assistant_text = response['messages'][-1].content[0]["text"]
+        st.session_state['message_history'].append({'role': 'assistant', 'content': assistant_text})  
