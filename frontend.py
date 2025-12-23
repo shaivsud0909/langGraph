@@ -3,6 +3,9 @@ from backend import chatbot
 from langchain_core.messages import HumanMessage
 import uuid
 
+
+
+
 #utility fuctions
 def genrate_thread_id():
     thread_id=uuid.uuid4()  
@@ -18,6 +21,17 @@ def add_thread(thread_id):
     if thread_id not in st.session_state['chat_threads']:
         st.session_state['chat_threads'].append(thread_id)
 
+def load_conversation(thread_id):
+    state = chatbot.get_state(
+        config={"configurable": {"thread_id": thread_id}}
+    )
+    return state.values.get("messages", [])
+       
+
+
+
+
+
 #session setup
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = [] # history
@@ -30,6 +44,10 @@ if 'chat_threads' not in st.session_state:
 
 add_thread(st.session_state['thread_id']) #calling the add function
 
+
+
+
+
 #side bar ui
 st.sidebar.title("langGraph Chatbot")
 
@@ -39,7 +57,24 @@ if st.sidebar.button("New Chat"):
 st.sidebar.header("My conversations")
 
 for thread_id in st.session_state['chat_threads']:
-    st.sidebar.button(str(thread_id))
+    if st.sidebar.button(str(thread_id)):
+        st.session_state['thread_id']=thread_id
+        messages=load_conversation(thread_id)
+
+        temp_messages=[]  
+
+        for message in messages:
+            if isinstance(message,HumanMessage):
+                role='user'
+            else:
+                role='assistant'
+            temp_messages.append({'role':role,'content':message.content}) #making it with message history format 
+
+        st.session_state['message_history']=temp_messages
+
+
+
+
 
 
 # Render history
@@ -51,6 +86,13 @@ for message in st.session_state["message_history"]:
 CONFIG = {"configurable": {"thread_id":st.session_state['thread_id']}}
 
 user_input = st.chat_input("type here")
+
+
+
+
+
+
+
 
 if user_input:
     # Save user message
