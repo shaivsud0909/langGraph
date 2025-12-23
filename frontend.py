@@ -2,43 +2,45 @@ import streamlit as st
 from backend import chatbot
 from langchain_core.messages import HumanMessage
 
-if 'message_history' not in st.session_state:
-    st.session_state['message_history']=[]
+if "message_history" not in st.session_state:
+    st.session_state["message_history"] = []
 
-for message in st.session_state['message_history']:
-    with st.chat_message(message['role']):
-        st.text(message['content'])    
+# Render history
+for message in st.session_state["message_history"]:
+    with st.chat_message(message["role"]):
+        st.text(message["content"])
 
-thread_id='1'
-CONFIG={'configurable':{'thread_id':thread_id}}
+thread_id = "1"
+CONFIG = {"configurable": {"thread_id": thread_id}}
 
-# {'role':'user','content':'hi'}
-
-# with st.chat_message('user'):
-#     st.text('hi')
-
-# with st.chat_message('assistant'):
-#     st.text('Hi,How are u?')    
-
-user_input=st.chat_input("type here")    
+user_input = st.chat_input("type here")
 
 if user_input:
-
-    st.session_state['message_history'].append({'role': 'user', 'content': user_input})
-    with st.chat_message('user'):
+    # Save user message
+    st.session_state["message_history"].append(
+        {"role": "user", "content": user_input}
+    )
+    with st.chat_message("user"):
         st.text(user_input)
-     
 
-    # response=chatbot.invoke({'messages':[HumanMessage(content=user_input)]},config=CONFIG)
+    # STREAMING RESPONSE
+    with st.chat_message("assistant"):
+        placeholder = st.empty()
+        assistant_text = ""
+#chatbot.stream() returns an iterator that yields a tuple
+# (message_chunk, metadata) on each step.
+# We use message_chunk to render streamed text and usually ignore metadata.
+        for message_chunk, metadata in chatbot.stream(   
+            {"messages": [HumanMessage(content=user_input)]},
+            config=CONFIG,
+            stream_mode="messages",
+        ):
+            if message_chunk.content:
+                chunk_text = message_chunk.content[0]["text"]
+                assistant_text += chunk_text
+                placeholder.text(assistant_text)
 
-    # assistant_text = response['messages'][-1].content[0]["text"]
-    
-    # st.session_state['message_history'].append({'role': 'assistant', 'content': assistant_text})   
-    with st.chat_message('assistant'):
-        assistant_text=st.write_stream(
-            message_chunk.content for message_chunk,metadata in chatbot.stream(
-                {'messages':[HumanMessage(content=user_input)]},config=CONFIG,stream_mode='messages'
-            )
-        )
-        # assistant_text = response['messages'][-1].content[0]["text"]
-        st.session_state['message_history'].append({'role': 'assistant', 'content': assistant_text})  
+    # Save assistant message
+    st.session_state["message_history"].append(
+        {"role": "assistant", "content": assistant_text}
+    )
