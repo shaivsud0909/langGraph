@@ -1,5 +1,5 @@
 import streamlit as st
-from backend import chatbot
+from backend import chatbot,retrieve_all_threads
 from langchain_core.messages import HumanMessage,AIMessage
 import uuid
 
@@ -29,9 +29,6 @@ def load_conversation(thread_id):
        
 
 
-
-
-
 #session setup
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = [] # history
@@ -40,7 +37,7 @@ if 'thread_id' not in st.session_state:
     st.session_state['thread_id']=genrate_thread_id() # genrate new thtread for new chat
 
 if 'chat_threads' not in st.session_state:
-    st.session_state['chat_threads']=[] #adding thread to the side bar
+    st.session_state['chat_threads']=retrieve_all_threads()#adding threads from the backend
 
 
 
@@ -100,9 +97,6 @@ for message in st.session_state["message_history"]:
 CONFIG = {"configurable": {"thread_id":st.session_state['thread_id']}}
 
 user_input = st.chat_input("type here")
-
-
-
 
 
 
