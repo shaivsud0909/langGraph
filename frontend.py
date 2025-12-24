@@ -1,6 +1,6 @@
 import streamlit as st
 from backend import chatbot
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage,AIMessage
 import uuid
 
 
@@ -42,6 +42,9 @@ if 'thread_id' not in st.session_state:
 if 'chat_threads' not in st.session_state:
     st.session_state['chat_threads']=[] #adding thread to the side bar
 
+
+
+
 add_thread(st.session_state['thread_id']) #calling the add function
 
 
@@ -61,14 +64,25 @@ for thread_id in st.session_state['chat_threads']:
         st.session_state['thread_id']=thread_id
         messages=load_conversation(thread_id)
 
-        temp_messages=[]  
+        temp_messages=[]  #making it with message history format 
 
         for message in messages:
             if isinstance(message,HumanMessage):
                 role='user'
+                content=message.content 
+            elif isinstance(message, AIMessage):
+                role = "assistant"
+                content = message.content    
+                if isinstance(content, list):
+                    content = "".join(
+                        block.get("text", "")
+                        for block in content
+                        if block.get("type") == "text")
             else:
-                role='assistant'
-            temp_messages.append({'role':role,'content':message.content}) #making it with message history format 
+                continue
+
+            temp_messages.append({"role":role,"content":content})        
+                    
 
         st.session_state['message_history']=temp_messages
 
