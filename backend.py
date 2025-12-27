@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from langgraph.checkpoint.sqlite import SqliteSaver
 import os
 import sqlite3
+from tools import tools
+from langgraph.prebuilt import ToolNode,tools_condition
 
 load_dotenv()
 
@@ -16,6 +18,11 @@ llm = ChatGoogleGenerativeAI(
     google_api_key=AK
 )
 
+#tool binding
+llm=llm.bind_tools(tools)
+tool_node=ToolNode(tools)
+
+#state
 class ChatState(TypedDict):
     messages:Annotated[list[BaseMessage],add_messages]
 
@@ -30,7 +37,11 @@ checkpointer=SqliteSaver(conn=conn)
 graph=StateGraph(ChatState)   
 
 graph.add_node('chat_node',chat_node)
+graph.add_node("tools",tool_node)
+
 graph.add_edge(START,'chat_node')
+graph.add_conditional_edges("chat_node",tools_condition)
+graph.add_edge("tools", "chat_node") 
 graph.add_edge('chat_node',END)
 
 

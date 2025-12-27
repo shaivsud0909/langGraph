@@ -5,7 +5,6 @@ import uuid
 
 
 
-
 #utility fuctions
 def genrate_thread_id():
     thread_id=uuid.uuid4()  
@@ -27,6 +26,7 @@ def load_conversation(thread_id):
     )
     return state.values.get("messages", [])
        
+
 
 
 #session setup
@@ -122,10 +122,18 @@ if user_input:
             config=CONFIG,
             stream_mode="messages",
         ):
-            if message_chunk.content:
-                chunk_text = message_chunk.content[0]["text"]
-                assistant_text += chunk_text
-                placeholder.text(assistant_text)
+            content = message_chunk.content
+            
+            if isinstance(content,str):
+                assistant_text += content
+
+            elif isinstance(content, list):
+              for part in content:
+               if isinstance(part, dict):
+                assistant_text += part.get("text", "")
+
+            placeholder.markdown(assistant_text)    
+
 
     # Save assistant message
     st.session_state["message_history"].append(
