@@ -1,6 +1,6 @@
 import streamlit as st
 from backend import chatbot,retrieve_all_threads
-from langchain_core.messages import HumanMessage,AIMessage
+from langchain_core.messages import HumanMessage,AIMessage,ToolMessage
 import uuid
 
 
@@ -122,11 +122,15 @@ if user_input:
             config=CONFIG,
             stream_mode="messages",
         ):
-            content = message_chunk.content
             
+            if isinstance(message_chunk, ToolMessage):
+             continue
+    
+            content = message_chunk.content
+
             if isinstance(content,str):
                 assistant_text += content
-
+                
             elif isinstance(content, list):
               for part in content:
                if isinstance(part, dict):

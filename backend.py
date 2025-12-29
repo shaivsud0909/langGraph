@@ -17,7 +17,7 @@ llm = ChatGoogleGenerativeAI(
     model="gemini-3-flash-preview",
     google_api_key=AK
 )
-
+ 
 #tool binding
 llm=llm.bind_tools(tools)
 tool_node=ToolNode(tools)
@@ -53,4 +53,3 @@ def retrieve_all_threads():
     for checkpoint in checkpointer.list(None):
         all_threads.add(checkpoint.config['configurable']['thread_id'])
     return list(all_threads)
-
