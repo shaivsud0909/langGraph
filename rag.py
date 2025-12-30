@@ -37,7 +37,6 @@ vectorstore = FAISS.from_texts(
     metadatas=metadatas
 )
 
-
 #retriver
 retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
