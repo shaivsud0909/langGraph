@@ -2,6 +2,7 @@ from langchain.tools import tool
 from dotenv import load_dotenv
 import os
 import requests
+from rag import rag_search
 
 load_dotenv()
 
@@ -25,5 +26,5 @@ def get_stock_price(symbol: str) -> dict:
 
 
 #creating list of tools
-tools=[get_stock_price]
+tools=[get_stock_price,rag_search]
 
